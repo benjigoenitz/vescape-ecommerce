@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  user:
+    environment:
+      NODE_ENV: development
+    entrypoint: /home/docker/startup.dev.sh

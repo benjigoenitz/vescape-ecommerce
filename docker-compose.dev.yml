@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  user:
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./services/user/src:/var/lib/user-service
+      - /var/lib/user-service/node_modules
+    entrypoint: /home/docker/startup.dev.sh
+  user_db:
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"

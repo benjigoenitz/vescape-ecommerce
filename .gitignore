@@ -1,0 +1,15 @@
+# IDE files
+.idea
+.DS_STORE
+.vscode
+pgdata/
+
+# Logs
+logs
+*.log
+
+# Dependencies
+node_modules
+
+# dot-env
+.env
