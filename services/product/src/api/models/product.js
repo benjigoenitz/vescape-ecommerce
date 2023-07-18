@@ -7,42 +7,30 @@ const Product = db.define('products', {
     primaryKey: true,
     autoIncrement: true
   },
-  email: {
+  name: {
     type: DataTypes.STRING,
     unique: true,
     allowNull: false,
     validate: {
-      isEmail: true,
       notEmpty: true
     }
   },
-  password: {
+  description: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
       notEmpty: true
     }
   },
-  name: {
-    type: DataTypes.STRING,
+  isAvailable: {
+    type: DataTypes.BOOLEAN,
+    field: 'is_available',
     allowNull: false,
-    validate: {
-      notEmpty: true
-    }
+    defaultValue: true
   },
-  lastName: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    field: 'last_name',
-    validate: {
-      notEmpty: true
-    }
-  },
-  role: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    isIn: [ [ 'admin', 'user' ] ],
-    defaultValue: 'user'
+  price: {
+    type: DataTypes.DOUBLE,
+    allowNull: false
   },
   createdAt: {
     type: DataTypes.DATE,

@@ -1,18 +1,19 @@
 const joi = require('joi');
 
-const signUpSchema = joi.object({
-  email: joi.string().email().required(),
-  password: joi.string().min(8).required(),
+const createProductSchema = joi.object({
   name: joi.string().required(),
-  lastName: joi.string().required()
+  description: joi.string().required(),
+  price: joi.number().required()
 });
 
-const signInSchema = joi.object({
-  email: joi.string().email().required(),
-  password: joi.string().required()
+const updateProductSchema = joi.object({
+  name: joi.string(),
+  description: joi.string(),
+  price: joi.number(),
+  isAvailable: joi.boolean()
 });
 
 module.exports = {
-  signUpSchema,
-  signInSchema
+  createProductSchema,
+  updateProductSchema
 };

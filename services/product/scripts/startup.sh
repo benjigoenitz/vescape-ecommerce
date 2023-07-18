@@ -1,6 +1,6 @@
 #!/bin/bash
 
 set -eu
-# make migrate
+make migrate
 
 tail -f /dev/null

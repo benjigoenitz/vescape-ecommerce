@@ -12,6 +12,7 @@ describe('User Controller', () => {
   const name = 'name';
   const lastName = 'lastName';
   const existingUser = { email };
+  const newuser = { id: 1, email, password, name, lastName };
   const next = jest.fn();
   const body = { email, password };
   const req = { body };
@@ -25,7 +26,7 @@ describe('User Controller', () => {
         return { email, password, name, lastName };
       });
       jest.spyOn(User, 'findOne').mockImplementation(() => null);
-      jest.spyOn(User, 'create').mockImplementation();
+      jest.spyOn(User, 'create').mockImplementation(() => newuser);
       jest.spyOn(utils, 'generateSignature').mockImplementation(() => token);
       jest.spyOn(utils, 'formatData').mockImplementation(() => ({ email, token }));
       jest.spyOn(bcrypt, 'genSaltSync').mockImplementation(() => 'saltysalt');
@@ -73,15 +74,15 @@ describe('User Controller', () => {
       expect(next.mock.calls[0][0].message).toEqual(`${email} is already registered`);
     });
 
-    it('should send email and token if there was no issue', async() => {
+    it('should send email and token as response if there was no issue', async() => {
 
       await userController.signUp(req, res, next);
 
       expect(signUpSchema.validateAsync).toHaveBeenCalledTimes(1);
       expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(User.create).toHaveBeenCalledTimes(1);
       expect(bcrypt.genSaltSync).toHaveBeenCalledTimes(1);
       expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+      expect(User.create).toHaveBeenCalledTimes(1);
       expect(utils.generateSignature).toHaveBeenCalledTimes(1);
       expect(utils.formatData).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledTimes(1);

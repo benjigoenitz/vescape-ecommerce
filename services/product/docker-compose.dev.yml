@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  user:
+  product:
     environment:
       NODE_ENV: development
     entrypoint: /home/docker/startup.dev.sh

@@ -22,6 +22,15 @@ function authenticated(req, res, next) {
   });
 }
 
+function authorized(req, res, next) {
+  if (req.payload.role !== 'admin') {
+    return next(createError.Forbidden());
+  }
+
+  return next();
+}
+
 module.exports = {
-  authenticated
+  authenticated,
+  authorized
 };

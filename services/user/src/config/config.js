@@ -1,5 +1,5 @@
-const env = process.env.NODE_ENV || 'development';
-const database = process.env.DB_NAME || 'user_service_local_dev}';
+const env = process.env.NODE_ENV;
+const database = process.env.DB_NAME;
 const logging = env === 'test' ? false : console.log;
 const max_connections = process.env.DB_MAX_CONNECTIONS || 100;
 const idle = process.env.DB_CONNECTION_IDLE || 100;
@@ -7,11 +7,11 @@ const evict = process.env.DB_CONNECTION_EVICT || 110;
 
 const config = {
   env,
-  username: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || 'postgres',
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
   database: database,
-  host: process.env.DB_HOST || 'vescape-ecommerce_user_db_1',
-  port: process.env.DB_PORT || '5432',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
   dialect: 'postgres',
   logging: logging,
   pool: {
@@ -21,7 +21,7 @@ const config = {
     evict
   },
   seederStorage: 'sequelize',
-  JWT_SECRET: process.env.JWT_SECRET || 'secret'
+  JWT_SECRET: process.env.JWT_SECRET
 };
 
 module.exports = config;

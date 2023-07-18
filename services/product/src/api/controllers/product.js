@@ -1,81 +1,93 @@
 const createError = require('http-errors');
-const bcrypt = require('bcryptjs');
 const utils = require('../helpers/utils');
-const { signUpSchema, signInSchema } = require('../helpers/validation');
-const User = require('../models/user');
+const { createProductSchema, updateProductSchema } = require('../helpers/validation');
+const Product = require('../models/product');
 
-async function signUp(req, res, next) {
+async function createProduct(req, res, next) {
   try {
-    const { email, password, name, lastName } = await signUpSchema.validateAsync(req.body);
+    const { name, description, price } = await createProductSchema.validateAsync(req.body);
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingProduct = await Product.findOne({ where: { name } });
 
-    if (existingUser) {
-      throw createError.Conflict(`${email} is already registered`);
+    if (existingProduct) {
+      throw createError.Conflict(`${name} is already registered`);
     }
 
-    const salt = bcrypt.genSaltSync();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await User.create({
-      email,
-      password: hashedPassword,
+    const product = await Product.create({
       name,
-      lastName
+      description,
+      price
     });
 
-    const token = await utils.generateSignature({ email, userId: user.id, role: user.role });
-    const data = utils.formatData({ email, token });
-
-    res.status(201).send(data);
+    res.status(201).send(utils.formatData(product));
   } catch (err) {
     next(err);
   }
 }
 
-async function signIn(req, res, next) {
+async function updateProduct(req, res, next) {
   try {
-    const { email, password } = await signInSchema.validateAsync(req.body);
-    const user = await User.findOne({ where: { email } });
+    const { id } = req.params;
+    const { name, description, price, isAvailable } = await updateProductSchema.validateAsync(req.body);
 
-    if (!user) {
-      throw createError.NotFound('User not registered');
+    const existingProduct = await Product.findOne({ where: { id } });
+
+    if (!existingProduct) {
+      throw createError.NotFound('Product not found');
     }
 
-    if (!await bcrypt.compare(password, user.password)) {
-      throw createError.Unauthorized('Invalid email/password');
+    if (name) {
+      existingProduct.name = name;
     }
 
-    const token = await utils.generateSignature({ email, userId: user.id, role: user.role });
-    const data = utils.formatData({ email, token });
+    if (description) {
+      existingProduct.description = description;
+    }
 
-    res.send(data);
+    if (price) {
+      existingProduct.price = price;
+    }
+
+    if ( typeof isAvailable === 'boolean') {
+      existingProduct.isAvailable = isAvailable;
+    }
+
+    await existingProduct.save();
+
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
 }
 
-async function profile(req, res, next) {
+async function getProducts(req, res, next) {
   try {
-    const { userId } = req.payload;
+    const products = await Product.findAll({ raw: true });
 
-    const user = await User.findOne({
-      where: {
-        id: userId
-      },
-      attributes: [ 'name', 'lastName', 'email' ],
-      raw: true
-    });
-    const data = utils.formatData(user);
+    res.send(utils.formatData(products));
+  } catch (err) {
+    next(err);
+  }
+}
 
-    res.send(data);
+async function getProductById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const product = await Product.findOne({ where: { id }, raw: true });
+
+    if (!product) {
+      throw createError.NotFound('Product not found');
+    }
+
+    res.send(utils.formatData(product));
   } catch (err) {
     next(err);
   }
 }
 
 module.exports = {
-  signUp,
-  signIn,
-  profile
+  createProduct,
+  updateProduct,
+  getProducts,
+  getProductById
 };

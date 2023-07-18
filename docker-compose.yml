@@ -28,6 +28,7 @@ services:
       DB_NAME: "${DB_NAME:-user_service_local_dev}"
       DB_HOST: "${DB_HOST:-vescape-ecommerce_user_db_1}"
       DB_PORT: "${DB_PORT:-5432}"
+      JWT_SECRET: "${JWT_SECRET:-secret}"
     ports:
       - "3000:3000"
     labels:
@@ -59,6 +60,7 @@ services:
       DB_NAME: "${DB_NAME:-product_service_local_dev}"
       DB_HOST: "${DB_HOST:-vescape-ecommerce_product_db_1}"
       DB_PORT: "${DB_PORT:-5432}"
+      JWT_SECRET: "${JWT_SECRET:-secret}"
     ports:
       - "3001:3001"
     labels:

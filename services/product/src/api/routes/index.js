@@ -1,12 +1,13 @@
 const express = require('express');
-const UserController = require('../controllers/user');
-const { authenticated } = require('../middleware/auth');
+const ProductController = require('../controllers/product');
+const { authenticated, authorized } = require('../middleware/auth');
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-router.post('/signup', UserController.signUp);
-router.post('/signin', UserController.signIn);
-router.get('/profile', authenticated, UserController.profile);
+router.post('/', authenticated, authorized, ProductController.createProduct);
+router.put('/:id', authenticated, authorized, ProductController.updateProduct);
+router.get('/', ProductController.getProducts);
+router.get('/:id', ProductController.getProductById);
 
 module.exports = router;

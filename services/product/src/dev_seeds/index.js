@@ -1,9 +1,11 @@
-const CleanUpSeeds = require('./cleanup');
+const CleanUp = require('./cleanup');
+const ProductSeeds = require('./product');
 const db = require('../db/database');
 
 async function devSeeds() {
   try {
-    await CleanUpSeeds.run();
+    await CleanUp.run();
+    await ProductSeeds.run();
   } catch (err) {
     console.log(err);
   }
@@ -11,7 +13,7 @@ async function devSeeds() {
 
 async function runTasks() {
   if (process.argv.slice(2).indexOf('--clear') !== -1) {
-    await CleanUpSeeds.run();
+    await CleanUp.run();
     return;
   }
 

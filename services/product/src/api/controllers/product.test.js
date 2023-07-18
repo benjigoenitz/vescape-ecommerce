@@ -1,206 +1,219 @@
 /* eslint-disable no-undef */
-const bcrypt = require('bcryptjs');
-const userController = require('./user');
+const productController = require('./product');
 const utils = require('../helpers/utils');
-const { signUpSchema, signInSchema } = require('../helpers/validation');
-const User = require('../models/user');
+const { createProductSchema, updateProductSchema } = require('../helpers/validation');
+const Product = require('../models/product');
 
-describe('User Controller', () => {
+describe('Product Controller', () => {
   // fixtures
-  const email = 'email@email.com';
-  const password = 'password';
-  const name = 'name';
-  const lastName = 'lastName';
-  const existingUser = { email };
+  const name = 'Playstation 5';
+  const description = 'Sony Game Console';
+  const price = 500;
+  const isAvailable = true;
+  const existingProduct = { id: 1, name, description, save: jest.fn() };
   const next = jest.fn();
-  const body = { email, password };
-  const req = { body };
-  const token = 'token';
+  const body = { name, description, price };
+  const req = { params: { id: 1 }, body };
   const res = { status: jest.fn(() => ({ send: jest.fn() })), send: jest.fn() };
-  const joiError = { isJoi: true, status: 400, message: 'Invalid email' };
+  const joiError = { isJoi: true, status: 400, message: 'name is required' };
 
-  describe('signUp', () => {
+  describe('createProduct', () => {
     beforeEach(() => {
-      jest.spyOn(signUpSchema, 'validateAsync').mockImplementation(() => {
-        return { email, password, name, lastName };
+      jest.spyOn(createProductSchema, 'validateAsync').mockImplementation(() => {
+        return { name, description, price, isAvailable };
       });
-      jest.spyOn(User, 'findOne').mockImplementation(() => null);
-      jest.spyOn(User, 'create').mockImplementation();
-      jest.spyOn(utils, 'generateSignature').mockImplementation(() => token);
+      jest.spyOn(Product, 'findOne').mockImplementation(() => null);
+      jest.spyOn(Product, 'create').mockImplementation();
       jest.spyOn(utils, 'formatData').mockImplementation(() => ({ email, token }));
-      jest.spyOn(bcrypt, 'genSaltSync').mockImplementation(() => 'saltysalt');
-      jest.spyOn(bcrypt, 'hash').mockImplementation(() => 'hashedPassword');
     });
 
     afterEach(() => {
       jest.clearAllMocks();
     });
 
-    it('should next joi error if email is invalid', async() => {
-      jest.spyOn(signUpSchema, 'validateAsync').mockImplementation(() => {
+    it('should next joi error if name is not present in request', async() => {
+      jest.spyOn(createProductSchema, 'validateAsync').mockImplementation(() => {
         throw joiError;
       });
 
-      await userController.signUp(req, res, next);
+      await productController.createProduct(req, res, next);
 
-      expect(signUpSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(0);
-      expect(User.create).toHaveBeenCalledTimes(0);
-      expect(bcrypt.genSaltSync).toHaveBeenCalledTimes(0);
-      expect(bcrypt.hash).toHaveBeenCalledTimes(0);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(0);
+      expect(createProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(0);
+      expect(Product.create).toHaveBeenCalledTimes(0);
       expect(utils.formatData).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
-      expect(next.mock.calls[0][0].isJoi).toEqual(true);
       expect(next.mock.calls[0][0].status).toEqual(400);
-      expect(next.mock.calls[0][0].message).toEqual('Invalid email');
+      expect(next.mock.calls[0][0].message).toEqual(joiError.message);
     });
 
-    it('should next error 409 if emails is already registered', async() => {
-      jest.spyOn(User, 'findOne').mockImplementation(() => existingUser);
+    it('should next error 409 if product already exists', async() => {
+      jest.spyOn(Product, 'findOne').mockImplementation(() => existingProduct);
 
-      await userController.signUp(req, res, next);
+      await productController.createProduct(req, res, next);
 
-      expect(signUpSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(User.create).toHaveBeenCalledTimes(0);
-      expect(bcrypt.genSaltSync).toHaveBeenCalledTimes(0);
-      expect(bcrypt.hash).toHaveBeenCalledTimes(0);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(0);
+      expect(createProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(Product.create).toHaveBeenCalledTimes(0);
       expect(utils.formatData).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
       expect(next.mock.calls[0][0].status).toEqual(409);
-      expect(next.mock.calls[0][0].message).toEqual(`${email} is already registered`);
+      expect(next.mock.calls[0][0].message).toEqual(`${name} is already registered`);
     });
 
-    it('should send email and token if there was no issue', async() => {
+    it('should next an error if Product.create throws an error', async() => {
+      jest.spyOn(Product, 'create').mockImplementation(() => {
+        throw new Error('test');
+      });
 
-      await userController.signUp(req, res, next);
+      await productController.createProduct(req, res, next);
 
-      expect(signUpSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(User.create).toHaveBeenCalledTimes(1);
-      expect(bcrypt.genSaltSync).toHaveBeenCalledTimes(1);
-      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(1);
+      expect(createProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(Product.create).toHaveBeenCalledTimes(1);
+      expect(utils.formatData).toHaveBeenCalledTimes(0);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(next.mock.calls[0][0].message).toEqual('test');
+    });
+
+    it('should return created product if there was no issue', async() => {
+      await productController.createProduct(req, res, next);
+
+      expect(createProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(Product.create).toHaveBeenCalledTimes(1);
       expect(utils.formatData).toHaveBeenCalledTimes(1);
       expect(res.status).toHaveBeenCalledTimes(1);
-      expect(res.status.mock.calls[0][0]).toEqual(201);
+      expect(res.status).toHaveBeenCalledWith(201);
     });
   });
 
-  describe('signIn', () => {
-
+  describe('updateProduct', () => {
     beforeEach(() => {
-      jest.spyOn(signInSchema, 'validateAsync').mockImplementation(() => {
-        return { email, password };
+      jest.spyOn(updateProductSchema, 'validateAsync').mockImplementation(() => {
+        return { name, description, price, isAvailable };
       });
-      jest.spyOn(User, 'findOne').mockImplementation(() => existingUser);
-      jest.spyOn(utils, 'generateSignature').mockImplementation(() => token);
+      jest.spyOn(Product, 'findOne').mockImplementation(() => existingProduct);
+      jest.spyOn(existingProduct, 'save').mockImplementation();
       jest.spyOn(utils, 'formatData').mockImplementation(() => ({ email, token }));
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => true);
     });
 
     afterEach(() => {
       jest.clearAllMocks();
     });
 
-    it('should next joi error if email is invalid', async() => {
-      jest.spyOn(signInSchema, 'validateAsync').mockImplementation(() => {
-        throw joiError;
-      });
+    it('should next error 404 if product does not exists', async() => {
+      jest.spyOn(Product, 'findOne').mockImplementation(() => null);
 
-      await userController.signIn(req, res, next);
+      await productController.updateProduct(req, res, next);
 
-      expect(signInSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(0);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(0);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(0);
-      expect(utils.formatData).toHaveBeenCalledTimes(0);
-      expect(next).toHaveBeenCalledTimes(1);
-      expect(next.mock.calls[0][0].isJoi).toEqual(true);
-      expect(next.mock.calls[0][0].status).toEqual(400);
-      expect(next.mock.calls[0][0].message).toEqual('Invalid email');
-    });
-
-    it('should next error 404 if email is not registered', async() => {
-      jest.spyOn(User, 'findOne').mockImplementation(() => null);
-
-      await userController.signIn(req, res, next);
-
-      expect(signInSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(0);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(0);
+      expect(updateProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(existingProduct.save).toHaveBeenCalledTimes(0);
       expect(utils.formatData).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
       expect(next.mock.calls[0][0].status).toEqual(404);
-      expect(next.mock.calls[0][0].message).toEqual('User not registered');
+      expect(next.mock.calls[0][0].message).toEqual('Product not found');
     });
 
-    it('should next error 401 if password is incorrect', async() => {
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
+    it('should next an error if product.save throws an error', async() => {
+      jest.spyOn(existingProduct, 'save').mockImplementation(() => {
+        throw new Error('test');
+      });
 
-      await userController.signIn(req, res, next);
+      await productController.updateProduct(req, res, next);
 
-      expect(signInSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(0);
+      expect(updateProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(existingProduct.save).toHaveBeenCalledTimes(1);
       expect(utils.formatData).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
-      expect(next.mock.calls[0][0].status).toEqual(401);
-      expect(next.mock.calls[0][0].message).toEqual('Invalid email/password');
+      expect(next.mock.calls[0][0].message).toEqual('test');
     });
 
-    it('should send email and token if there was no issue', async() => {
+    it('should return 204 code if there was no issue', async() => {
 
-      await userController.signIn(req, res, next);
+      await productController.updateProduct(req, res, next);
 
-      expect(signInSchema.validateAsync).toHaveBeenCalledTimes(1);
-      expect(User.findOne).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(utils.generateSignature).toHaveBeenCalledTimes(1);
-      expect(utils.formatData).toHaveBeenCalledTimes(1);
-      expect(res.send).toHaveBeenCalledTimes(1);
-      expect(res.send.mock.calls[0][0]).toEqual({ email, token });
+      expect(updateProductSchema.validateAsync).toHaveBeenCalledTimes(1);
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(existingProduct.save).toHaveBeenCalledTimes(1);
+      expect(utils.formatData).toHaveBeenCalledTimes(0);
+      expect(res.status).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(204);
     });
   });
 
-  describe('profile', () => {
-
+  describe('getProducts', () => {
     beforeEach(() => {
-      req.payload = { email };
-      jest.spyOn(User, 'findOne').mockImplementation(() => existingUser);
-      jest.spyOn(utils, 'formatData').mockImplementation(() => ({ email, name, lastName }));
+      jest.spyOn(Product, 'findAll').mockImplementation(() => existingProduct);
+      jest.spyOn(utils, 'formatData').mockImplementation(() => {
+        return { data: [ {  existingProduct } ] };
+      });
     });
 
     afterEach(() => {
       jest.clearAllMocks();
     });
 
-    it('should next error if User.findOne throws an error', async() => {
-      jest.spyOn(User, 'findOne').mockImplementation(() => {
-        throw Error('error');
+    it('should next an error if Product.findAll throws an error', async() => {
+      jest.spyOn(Product, 'findAll').mockImplementation(() => {
+        throw new Error('test');
       });
 
-      await userController.profile(req, res, next);
+      await productController.getProducts(req, res, next);
 
-      expect(User.findOne).toHaveBeenCalledTimes(1);
+      expect(Product.findAll).toHaveBeenCalledTimes(1);
       expect(utils.formatData).toHaveBeenCalledTimes(0);
       expect(next).toHaveBeenCalledTimes(1);
+      expect(next.mock.calls[0][0].message).toEqual('test');
     });
 
-    it('should return profile if there was no issue', async() => {
+    it('should return products if there was no issue', async() => {
 
-      await userController.profile(req, res, next);
+      await productController.getProducts(req, res, next);
 
-      expect(User.findOne).toHaveBeenCalledTimes(1);
+      expect(Product.findAll).toHaveBeenCalledTimes(1);
       expect(utils.formatData).toHaveBeenCalledTimes(1);
       expect(res.send).toHaveBeenCalledTimes(1);
-      expect(res.send.mock.calls[0][0]).toEqual({ name, lastName, email });
+      expect(res.send).toHaveBeenCalledWith({ data: [ {  existingProduct } ] });
     });
   });
 
+  describe('getProductById', () => {
+    beforeEach(() => {
+      jest.spyOn(Product, 'findOne').mockImplementation(() => existingProduct);
+      jest.spyOn(utils, 'formatData').mockImplementation(() => {
+        return { data: {  existingProduct } };
+      });
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should next an error if Product.findOne throws an error', async() => {
+      jest.spyOn(Product, 'findOne').mockImplementation(() => {
+        throw new Error('test');
+      });
+
+      await productController.getProductById(req, res, next);
+
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(utils.formatData).toHaveBeenCalledTimes(0);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(next.mock.calls[0][0].message).toEqual('test');
+    });
+
+    it('should return product if there was no issue', async() => {
+
+      await productController.getProductById(req, res, next);
+
+      expect(Product.findOne).toHaveBeenCalledTimes(1);
+      expect(utils.formatData).toHaveBeenCalledTimes(1);
+      expect(res.send).toHaveBeenCalledTimes(1);
+      expect(res.send).toHaveBeenCalledWith({ data: {  existingProduct } });
+    });
+  });
 });
 
