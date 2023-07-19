@@ -28,5 +28,5 @@ $make dev
 
 Note: docker-compose (v1) and Node.js (v16) are necessary to build and run this project, also RabbitMQ is required, you can use docker to run a RabbitMQ instance or use an instance of RabbitMQ hosted elsewhere, the project is configured out of the box to work with a local instance with docker. Run the next command.
 ~~~~~ 
-$docker run -d --name amqp.test -p 5672:5672 rabbitmq
+docker run -d --name amqp.test -p 5672:5672 rabbitmq
 ~~~~~~
