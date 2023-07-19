@@ -2,25 +2,19 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    return queryInterface.createTable('products', {
+    return queryInterface.createTable('carts', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         unique: true
       },
-      name: {
-        type: Sequelize.STRING,
-        unique: true
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
-      description: {
-        type: Sequelize.STRING
-      },
-      is_available: {
-        type: Sequelize.BOOLEAN
-      },
-      price: {
-        type: Sequelize.DOUBLE
+      products: {
+        type: Sequelize.JSONB
       },
       created_at: {
         type: Sequelize.DATE
@@ -32,10 +26,9 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
-
   },
 
   async down(queryInterface) {
-    return queryInterface.dropTable('products');
+    return queryInterface.dropTable('carts');
   }
 };

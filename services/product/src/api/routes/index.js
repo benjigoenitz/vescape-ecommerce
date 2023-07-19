@@ -9,5 +9,6 @@ router.post('/', authenticated, authorized, ProductController.createProduct);
 router.put('/:id', authenticated, authorized, ProductController.updateProduct);
 router.get('/', ProductController.getProducts);
 router.get('/:id', ProductController.getProductById);
+router.put('/:id/cart', authenticated, ProductController.addProductToCart);
 
 module.exports = router;

@@ -10,7 +10,7 @@ help: Makefile
 dev: deps ## Run in dev mode
 	@npm run dev
 
-reset: deps ## Reset databse and populate with dev seeds data
+reset: deps ## Reset database and populate with dev seeds data
 	@node ./dev_seeds
 
 migrate: deps ## Execute migrations

@@ -5,6 +5,13 @@ const userData = [ {
   email: 'admin@email.com',
   password: '$2a$10$O6zj8vb8kNgVxNtMCTHt1Ox.uD.dYwsZC6Eo4gM2rZUYA89FeXHZS', // Pass@word123
   role: 'admin'
+},
+{
+  name: 'Jane',
+  lastName: 'Doe',
+  email: 'user@email.com',
+  password: '$2a$10$O6zj8vb8kNgVxNtMCTHt1Ox.uD.dYwsZC6Eo4gM2rZUYA89FeXHZS', // Pass@word123
+  role: 'user'
 } ];
 
 module.exports = {

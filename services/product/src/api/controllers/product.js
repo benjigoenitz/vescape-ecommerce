@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const utils = require('../helpers/utils');
 const { createProductSchema, updateProductSchema } = require('../helpers/validation');
 const Product = require('../models/product');
+const { publishToChannel } = require('../../utils/broker');
 
 async function createProduct(req, res, next) {
   try {
@@ -85,9 +86,39 @@ async function getProductById(req, res, next) {
   }
 }
 
+async function addProductToCart(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findOne({
+      where: {
+        id
+      },
+      attributes: [ 'id', 'name', 'price' ],
+      raw: true
+    });
+
+    if (!product) {
+      throw createError.NotFound('Product not found');
+    }
+
+    const data = {
+      event: 'ADD_TO_CART',
+      data: product
+    };
+
+    publishToChannel('USER_SERVICE', JSON.stringify(data));
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createProduct,
   updateProduct,
   getProducts,
-  getProductById
+  getProductById,
+  addProductToCart
 };

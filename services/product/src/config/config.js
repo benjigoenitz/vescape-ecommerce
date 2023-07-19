@@ -21,7 +21,12 @@ const config = {
     evict
   },
   seederStorage: 'sequelize',
-  JWT_SECRET: process.env.JWT_SECRET
+  JWT_SECRET: process.env.JWT_SECRET,
+  AMPQ_HOST: process.env.AMPQ_HOST || 'amqp://host.docker.internal',
+  AMPQ_QUEUE: process.env.AMPQ_QUEUE || 'ECOMMERCE',
+  PRODUCT_SERVICE: 'PRODUCT_SERVICE',
+  USER_SERVICE: 'USER_SERVICE',
+  ORDER_SERVICE: 'ORDER_SERVICE'
 };
 
 module.exports = config;

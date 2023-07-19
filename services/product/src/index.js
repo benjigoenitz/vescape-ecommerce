@@ -1,5 +1,6 @@
 const express = require('express');
 const logger = require('morgan');
+const { startChannel } = require('./utils/broker');
 const { notFoundHandler, errorHandler } = require('./api/helpers/error');
 const routes = require('./api/routes');
 
@@ -13,6 +14,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/', routes);
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+startChannel();
 
 app.listen(port, () => {
   console.log(`User service listening on port ${port}`);
