@@ -5,6 +5,6 @@ const { authenticated } = require('../middleware/auth');
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
-router.get('/orders', authenticated, OrderController.getOrders);
+router.post('/', authenticated, OrderController.placerOrder);
 
 module.exports = router;

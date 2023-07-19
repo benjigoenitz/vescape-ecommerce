@@ -1,5 +1,6 @@
 const amqplib = require('amqplib');
 const config = require('../config/config');
+const { handleEvents } = require('../services/eventHandler');
 
 async function createChannel() {
   const conn = await amqplib.connect(config.AMPQ_HOST);
@@ -16,12 +17,14 @@ async function startChannel() {
   channel.assertExchange(config.AMPQ_QUEUE, 'direct', { durable: true });
   const q = await channel.assertQueue('', { exclusive: true });
 
-  channel.bindQueue(q.queue, config.AMPQ_QUEUE, config.USER_SERVICE);
+  channel.bindQueue(q.queue, config.AMPQ_QUEUE, config.PRODUCT_SERVICE);
 
   channel.consume(q.queue, (msg) => {
     if (msg !== null) {
-      console.log('Recieved:', msg.content.toString());
+      const message = msg.content.toString();
 
+      console.log('Recieved:', message);
+      handleEvents(JSON.parse(message));
       channel.ack(msg);
     } else {
       console.log('Consumer cancelled by server');

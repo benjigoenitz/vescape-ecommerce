@@ -28,9 +28,6 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER
       },
-      status: {
-        type: Sequelize.STRING
-      },
       created_at: {
         type: Sequelize.DATE
       },

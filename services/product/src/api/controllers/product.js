@@ -89,6 +89,7 @@ async function getProductById(req, res, next) {
 async function addProductToCart(req, res, next) {
   try {
     const { id } = req.params;
+    const { userId } = req.payload;
 
     const product = await Product.findOne({
       where: {
@@ -103,11 +104,15 @@ async function addProductToCart(req, res, next) {
     }
 
     const data = {
+      userId,
       event: 'ADD_TO_CART',
-      data: product
+      data: {
+        userId,
+        product
+      }
     };
 
-    publishToChannel('USER_SERVICE', JSON.stringify(data));
+    publishToChannel('PRODUCT_SERVICE', JSON.stringify(data));
 
     res.status(204).send();
   } catch (err) {

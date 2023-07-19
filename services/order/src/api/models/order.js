@@ -14,7 +14,8 @@ const Order = db.define('orders', {
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2),
-    field: 'amount'
+    field: 'amount',
+    allowNull: false
   },
   status: {
     type: DataTypes.STRING,
